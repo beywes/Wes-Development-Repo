@@ -1,0 +1,45 @@
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin123!"
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:admin"
+  numExecutors: 2
+  systemMessage: "Jenkins Configured Automatically"
+  
+  nodes:
+  - permanent:
+      name: "built-in"
+      remoteFS: "/var/jenkins_home"
+      numExecutors: 2
+
+jobs:
+  - script: >
+      pipelineJob('webserver') {
+        definition {
+          cps {
+            script('''
+              pipeline {
+                agent any
+                stages {
+                  stage('Start Web Server') {
+                    steps {
+                      sh '''
+                        mkdir -p /var/jenkins_home/www
+                        cp -r /var/jenkins_home/webapp/* /var/jenkins_home/www/
+                        cd /var/jenkins_home/www
+                        python3 -m http.server 8081 &
+                      '''
+                    }
+                  }
+                }
+              }
+            ''')
+          }
+        }
+      }

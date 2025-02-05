@@ -1,61 +1,55 @@
-# Jenkins Webserver Docker Image
+# Jenkins Webserver Docker Setup
 
-This Docker image provides a Jenkins server running on Ubuntu 22.04 with the following features:
+This repository contains a Docker-based Jenkins setup with an integrated Python web application.
 
-## Features
-- Based on Ubuntu 22.04
-- Jenkins version 2.426.1 (LTS)
-- OpenJDK 11
-- Built-in health checks
-- Security optimizations
-- Proper user permissions
-- Volume support for persistent data
+## Directory Structure
 
-## Ports
-- 8080: Jenkins web interface
-- 50000: Jenkins agent connection port
-
-## Environment Variables
-- `JENKINS_HOME`: /var/jenkins_home
-- `JAVA_OPTS`: -Xmx2048m (Configurable Java heap size)
-- `TZ`: UTC (Configurable timezone)
-
-## Usage
-
-### Basic Run
-```bash
-docker build -t jenkins-ubuntu .
-docker run -d -p 8080:8080 -p 50000:50000 jenkins-ubuntu
+```
+Ubuntu_Jenkins_Webserver/
+├── deployment-scripts/           # Deployment and automation scripts
+│   ├── deploy-jenkins.ps1       # PowerShell deployment script
+│   ├── deploy-jenkins.sh        # Bash deployment script
+│   └── start-services.sh        # Container startup script
+│
+├── webapp/                      # Web application files
+│   ├── config/                  # Configuration files
+│   │   └── jenkins.yaml         # Jenkins Configuration as Code
+│   ├── index.html              # Main web page
+│   └── test.html               # Test web page
+│
+├── standard-operating-procedures/ # Documentation
+│   ├── SOP_BASH.md             # Unix/Linux deployment guide
+│   └── SOP_POWERSHELL.md       # Windows deployment guide
+│
+├── Dockerfile                   # Docker image definition
+└── README.md                    # This file
 ```
 
-### With Persistent Volume
-```bash
-docker run -d \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -v jenkins_home:/var/jenkins_home \
-  jenkins-ubuntu
+## Quick Start
+
+### Windows (PowerShell)
+```powershell
+cd deployment-scripts
+.\deploy-jenkins.ps1
 ```
 
-### With Custom Java Options
+### Unix/Linux (Bash)
 ```bash
-docker run -d \
-  -p 8080:8080 \
-  -p 50000:50000 \
-  -e JAVA_OPTS="-Xmx4096m" \
-  jenkins-ubuntu
+cd deployment-scripts
+chmod +x deploy-jenkins.sh
+./deploy-jenkins.sh
 ```
 
-## Initial Setup
-1. Access Jenkins at http://localhost:8080
-2. Get the initial admin password from the logs:
-   ```bash
-   docker logs <container_id>
-   ```
-3. Follow the setup wizard to complete installation
+## Access Information
 
-## Security Notes
-- Runs as non-root user 'jenkins'
-- Uses HTTPS for package downloads
-- Regular security updates included
-- Minimal base image to reduce attack surface
+- Jenkins UI: http://localhost:8080
+  - Username: admin
+  - Password: admin123!
+- Web Application: http://localhost:8081
+- Jenkins Agent Port: 50000
+
+## Documentation
+
+Detailed setup and usage instructions can be found in the `standard-operating-procedures` directory:
+- `SOP_BASH.md` - Unix/Linux deployment guide
+- `SOP_POWERSHELL.md` - Windows deployment guide

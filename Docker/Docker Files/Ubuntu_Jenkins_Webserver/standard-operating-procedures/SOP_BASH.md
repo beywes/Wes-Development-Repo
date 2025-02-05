@@ -101,6 +101,79 @@ docker rmi ubuntu-jenkins-webserver:latest
 docker volume rm jenkins_home
 ```
 
+## Automated Deployment
+
+An automated deployment script (`deploy-jenkins.sh`) is provided to streamline the build and deployment process.
+
+### Script Features
+- Automatic port availability checking
+- Cleanup of existing resources
+- Image building and container deployment
+- Service health checking
+- Automatic retrieval of Jenkins admin password
+- Colored output for better readability
+- Error handling and status reporting
+
+### Using the Script
+```bash
+# Make the script executable
+chmod +x deploy-jenkins.sh
+
+# Run the script
+./deploy-jenkins.sh
+```
+
+The script will:
+1. Check if required ports (8080, 8081, 50000) are available
+2. Clean up any existing container and volume
+3. Build the Docker image
+4. Create and configure the Jenkins volume
+5. Start the container
+6. Wait for both Jenkins and the web application to become available
+7. Display the Jenkins initial admin password
+8. Provide URLs for accessing the services
+
+### Script Location
+The deployment script is located at:
+```
+./deploy-jenkins.sh
+```
+
+### Error Handling
+The script includes comprehensive error handling:
+- Port conflict detection
+- Build failure handling
+- Container startup verification
+- Service availability checking
+
+If any step fails, the script will:
+1. Display an error message
+2. Clean up any created resources
+3. Exit with a non-zero status code
+
+### Monitoring Progress
+The script provides detailed progress information:
+- Build status updates
+- Service startup progress
+- Health check results
+- Final deployment status
+
+### Example Output
+```bash
+Starting Jenkins Webserver Deployment...
+Cleaning up existing resources...
+Building Docker image...
+Creating Jenkins volume...
+Starting container...
+Waiting for Jenkins to start...
+Waiting for Web Application to start...
+Retrieving Jenkins initial admin password...
+Deployment complete!
+Jenkins UI: http://localhost:8080
+Web Application: http://localhost:8081
+Jenkins Agent Port: 50000
+```
+
 ## Troubleshooting Guide
 
 ### 1. Jenkins UI Not Accessible
