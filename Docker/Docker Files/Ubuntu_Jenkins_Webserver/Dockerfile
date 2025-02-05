@@ -18,6 +18,7 @@ RUN apt-get update && \
     git \
     wget \
     unzip \
+    python3 \
     fontconfig \
     ca-certificates \
     tzdata \
@@ -33,8 +34,23 @@ WORKDIR ${JENKINS_HOME}
 # Download and verify Jenkins
 RUN curl -fsSL https://get.jenkins.io/war-stable/${JENKINS_VERSION}/jenkins.war -o /var/jenkins_home/jenkins.war
 
-# Web port
-EXPOSE 8080
+# Create necessary directories
+RUN mkdir -p /var/jenkins_home/www \
+    && mkdir -p /var/jenkins_home/init.groovy.d \
+    && mkdir -p /var/jenkins_home/jobs/webserver
+
+# Copy web application files
+COPY --chown=jenkins:jenkins webapp/ /var/jenkins_home/webapp/
+
+# Copy Jenkins job configuration
+COPY --chown=jenkins:jenkins jenkins_jobs/webserver-job.xml /var/jenkins_home/jobs/webserver/config.xml
+
+# Copy startup script
+COPY --chown=jenkins:jenkins start-services.sh /var/jenkins_home/start-services.sh
+RUN chmod +x /var/jenkins_home/start-services.sh
+
+# Web ports
+EXPOSE 8080 8081
 
 # Agent port
 EXPOSE 50000
@@ -44,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -f http://localhost:8080/login || exit 1
 
 # Set entry point
-ENTRYPOINT ["java", "-jar", "/var/jenkins_home/jenkins.war"]
+ENTRYPOINT ["/var/jenkins_home/start-services.sh"]
