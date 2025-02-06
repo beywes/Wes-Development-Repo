@@ -70,7 +70,7 @@ function Set-GroupPermissions {
                 Write-LogMessage "Set permissions for $GroupName on $path" -Type "Success"
             }
             catch {
-                Write-LogMessage "Failed to set permissions on $path: $_" -Type "Error"
+                Write-LogMessage "Failed to set permissions on `$path`: $($Error[0].Message)" -Type "Error"
             }
         }
     }
@@ -131,6 +131,6 @@ try {
     Write-LogMessage "Admin group setup completed successfully" -Type "Success"
 }
 catch {
-    Write-LogMessage "An error occurred: $_" -Type "Error"
+    Write-LogMessage "An error occurred: $($Error[0].Message)" -Type "Error"
     exit 1
 }
