@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pet Voting Results</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .results {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+        .pet-result {
+            padding: 20px;
+            border-radius: 5px;
+            min-width: 200px;
+        }
+        #dogs-result { background-color: #4CAF50; color: white; }
+        #cats-result { background-color: #2196F3; color: white; }
+        #lizards-result { background-color: #f44336; color: white; }
+        .count {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Pet Voting Results</h1>
+    <div class="results">
+        <div id="dogs-result" class="pet-result">
+            <h2>Dogs 🐕</h2>
+            <div class="count">0</div>
+            <div class="percentage">0%</div>
+        </div>
+        <div id="cats-result" class="pet-result">
+            <h2>Cats 🐱</h2>
+            <div class="count">0</div>
+            <div class="percentage">0%</div>
+        </div>
+        <div id="lizards-result" class="pet-result">
+            <h2>Lizards 🦎</h2>
+            <div class="count">0</div>
+            <div class="percentage">0%</div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        
+        socket.on('current_votes', (votes) => {
+            const total = votes.dogs + votes.cats + votes.lizards;
+            
+            ['dogs', 'cats', 'lizards'].forEach(pet => {
+                const count = votes[pet] || 0;
+                const percentage = total === 0 ? 0 : Math.round((count / total) * 100);
+                
+                document.querySelector(`#${pet}-result .count`).textContent = count;
+                document.querySelector(`#${pet}-result .percentage`).textContent = `${percentage}%`;
+            });
+        });
+    </script>
+</body>
+</html>
