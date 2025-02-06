@@ -70,7 +70,7 @@ function Set-GroupPermissions {
                 Write-LogMessage "Set permissions for $GroupName on $path" -Type "Success"
             }
             catch {
-                Write-LogMessage "Failed to set permissions on `$path`: $($Error[0].Message)" -Type "Error"
+                Write-LogMessage "Failed to set permissions on ${path}: $($Error[0].Message)" -Type "Error"
             }
         }
     }
