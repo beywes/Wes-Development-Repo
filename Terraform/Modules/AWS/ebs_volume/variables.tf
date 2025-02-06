@@ -65,3 +65,4 @@ variable "tags" {
   description = "A map of tags to add to the EBS volume"
   type        = map(string)
   default     = {}
+}

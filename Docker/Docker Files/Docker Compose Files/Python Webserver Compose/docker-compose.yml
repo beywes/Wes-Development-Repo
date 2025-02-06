@@ -1,0 +1,35 @@
+# Define the services/containers to be run
+services:
+  # Flask web application service
+  web:
+    build: .                     # Build using Dockerfile in current directory
+    ports:
+      - "8083:8083"             # Map host port 8083 to container port 8083
+    environment:                 # Environment variables for Flask application
+      - MYSQL_USER=flaskuser    # Database username
+      - MYSQL_PASSWORD=flaskpass # Database password
+      - MYSQL_DATABASE=flaskdb  # Database name
+    depends_on:                  # Ensure database container starts first
+      db:
+        condition: service_healthy
+
+  # MySQL database service
+  db:
+    image: mysql:8.0            # Use MySQL 8.0 image from Docker Hub
+    environment:                # Environment variables for MySQL configuration
+      - MYSQL_ROOT_PASSWORD=rootpass  # Root password for MySQL
+      - MYSQL_DATABASE=flaskdb       # Create this database on startup
+      - MYSQL_USER=flaskuser        # Create this user on startup
+      - MYSQL_PASSWORD=flaskpass    # Set user password
+    volumes:                    # Persistent storage for database data
+      - mysql_data:/var/lib/mysql   # Mount named volume to MySQL data directory
+    healthcheck:               # Add healthcheck for MySQL
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "flaskuser", "--password=flaskpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# Define named volumes for persistent data storage
+volumes:
+  mysql_data:                   # Volume for MySQL data persistence between container restarts
