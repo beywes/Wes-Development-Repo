@@ -1,0 +1,81 @@
+# Resume Builder Application Deployment Playbook
+# This playbook automates the deployment process of the Resume Builder application
+---
+- name: CI/CD Pipeline for Resume Builder App
+  hosts: localhost
+  gather_facts: yes
+  tasks:
+    # Verify Python installation and version
+    - name: Check Python installation
+      command: "{{ ansible_python.executable }} --version"
+      register: python_version
+      changed_when: false
+
+    - name: Display Python version
+      debug:
+        var: python_version.stdout
+
+    # Run code quality checks using flake8
+    - name: Run flake8 linting on the project
+      command: "{{ ansible_python.executable }} -m flake8 ."
+      args:
+        chdir: ".."
+      register: flake8_output
+      ignore_errors: yes
+
+    - name: Display linting results
+      debug:
+        msg: "{{ flake8_output.stdout }}"
+      when: flake8_output.stdout is defined
+
+    # Verify Docker installation and status
+    - name: Check if Docker is running
+      command: docker info
+      register: docker_check
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Fail if Docker is not running
+      fail:
+        msg: "Docker is not running. Please start Docker and try again."
+      when: docker_check.rc != 0
+
+    # Build new Docker image
+    - name: Build Docker image
+      command: docker build -t resume_builder_app ..
+      register: docker_build
+
+    - name: Display Docker build output
+      debug:
+        var: docker_build.stdout_lines
+
+    # Clean up existing containers
+    - name: Check if resume_builder_app container is running
+      command: docker ps -q -f name=resume_builder_app
+      register: running_container
+      changed_when: false
+
+    - name: Stop existing resume_builder_app container if running
+      command: docker stop resume_builder_app
+      when: running_container.stdout != ""
+      ignore_errors: yes
+
+    - name: Remove existing resume_builder_app container
+      command: docker rm resume_builder_app
+      when: running_container.stdout != ""
+      ignore_errors: yes
+
+    # Deploy new container
+    - name: Run Docker container
+      command: docker run -d --name resume_builder_app -p 5000:5000 resume_builder_app
+      register: docker_run
+
+    # Verify deployment
+    - name: Verify container is running
+      command: docker ps -f name=resume_builder_app
+      register: container_status
+      failed_when: container_status.rc != 0
+
+    - name: Display deployment success message
+      debug:
+        msg: "Resume Builder App has been successfully deployed and is available at http://localhost:5000"
