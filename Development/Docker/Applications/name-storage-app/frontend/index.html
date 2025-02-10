@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name Storage App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h1 class="text-2xl font-bold mb-6">Name Storage App</h1>
+            
+            <!-- Name Input Form -->
+            <div class="mb-8">
+                <form id="nameForm" class="flex gap-4">
+                    <input type="text" id="nameInput" 
+                           class="flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Enter a name...">
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Add Name
+                    </button>
+                </form>
+            </div>
+
+            <!-- Database Explanation -->
+            <div class="mb-8 p-4 bg-gray-50 rounded-lg">
+                <h2 class="text-lg font-semibold mb-2">How it works:</h2>
+                <ol class="list-decimal list-inside space-y-2">
+                    <li>When you enter a name and click "Add Name", the frontend sends a POST request to the backend API.</li>
+                    <li>The backend receives the name and stores it in a SQLite database with a timestamp.</li>
+                    <li>The database persists the data even if the application restarts.</li>
+                    <li>The frontend automatically refreshes to show the updated list of names.</li>
+                    <li>The list shows the 50 most recent names in reverse chronological order.</li>
+                </ol>
+            </div>
+
+            <!-- Names List -->
+            <div>
+                <h2 class="text-xl font-semibold mb-4">Recent Names</h2>
+                <div id="namesList" class="space-y-2">
+                    <!-- Names will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        async function addName(name) {
+            try {
+                const response = await fetch(`${API_URL}/names/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: name })
+                });
+                if (!response.ok) throw new Error('Failed to add name');
+                await fetchNames();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to add name');
+            }
+        }
+
+        async function fetchNames() {
+            try {
+                const response = await fetch(`${API_URL}/names/`);
+                const names = await response.json();
+                const namesList = document.getElementById('namesList');
+                namesList.innerHTML = names.map(item => `
+                    <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                        <span class="font-medium">${item.name}</span>
+                        <span class="text-sm text-gray-500">${new Date(item.timestamp).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        document.getElementById('nameForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            if (name) {
+                await addName(name);
+                input.value = '';
+            }
+        });
+
+        // Initial fetch
+        fetchNames();
+        // Refresh every 5 seconds
+        setInterval(fetchNames, 5000);
+    </script>
+</body>
+</html>
