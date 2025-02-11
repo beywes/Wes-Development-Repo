@@ -1,29 +1,52 @@
+# Specify docker-compose version
+# Version 3.8 supports the latest Docker features while maintaining compatibility
 version: '3.8'
 
+# Define the services/containers that make up the application
 services:
+  # Backend service configuration
   backend:
     build: 
+      # Path to the backend Dockerfile
       context: ./backend
     ports:
+      # Map container port 8000 to host port 8000
+      # Format: "HOST_PORT:CONTAINER_PORT"
       - "8000:8000"
     volumes:
-      - db-data:/app  # Persist the SQLite database
+      # Mount a named volume to persist SQLite database data
+      # This ensures data survives container restarts
+      - db-data:/app
     networks:
+      # Connect to the app-network for communication with frontend
       - app-network
 
+  # Frontend service configuration
   frontend:
     build: 
+      # Path to the frontend Dockerfile
       context: ./frontend
     ports:
+      # Map container port 80 to host port 80
+      # This makes the web app accessible via http://localhost
       - "80:80"
     depends_on:
+      # Ensure backend starts before frontend
+      # This prevents connection errors on startup
       - backend
     networks:
+      # Connect to the same network as backend for service discovery
       - app-network
 
+# Define named volumes for persistent data storage
 volumes:
-  db-data:  # Named volume for database persistence
+  # Volume for SQLite database
+  # Data will persist even if containers are removed
+  db-data:
 
+# Define custom networks for service isolation
 networks:
+  # Bridge network for inter-service communication
+  # Provides DNS resolution between services
   app-network:
     driver: bridge
